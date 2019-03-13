@@ -25,7 +25,7 @@ class WebscraperController extends AppController
      */
     public function index()
     {
-  
+
 
         $http = new Client();
 
@@ -33,6 +33,14 @@ class WebscraperController extends AppController
         $width = 205;
         $aspectRatio = 55;
         $rim = 16;
+
+        /*
+
+        $response = $http->get(
+          $url.'/shopping/tyre-results?width='.$width.'&profile='.$aspectRatio.'&rim='.$rim.'&speed=.'
+        );
+
+        */
 
         $response = $http->get(
           $url.'/shopping/tyre-results?width='.$width.'&profile='.$aspectRatio.'&rim='.$rim.'&speed=.'
@@ -46,38 +54,32 @@ class WebscraperController extends AppController
 
         $dom = str_get_html($response->body);
 
+        //$x = 'Hello';
+        //$x->dump();
+
         //$dom->dump();
 
-        foreach($dom->find('[\{.*\:\{.*\:.*\}\}]') as $element){
-          $element->dump();
-        }
+      //  dd($dom);
+
+          foreach($dom->find('script') as $element){
+            $element->dump();
+          }
 
         //dd('die');
 
+        // $scripts = $dom->find('script');
+        // foreach($scripts as $s) {
+        // if(strpos($s->innertext, 'allTyres') !== false) {
+        //     $script = $s;
+        //     $s->dump();
+        // }
 
-
-
-
-
-
-
-
-
-        $result = file_get_html('http://localhost/encircle-marketing/users/view/5');
-
-        $get_result = array();
-
-        foreach ($result->find('profile') as $element) {
-          array_push($get_result, $element);
-        }
-
-        $result->clear();
-
-
-        dd($get_result);
-
-        $this->set('response', $response);
+        dd('die');
     }
+
+
+
+
 
     /**
      * View method
@@ -94,6 +96,8 @@ class WebscraperController extends AppController
 
         $this->set('webscraper', $webscraper);
     }
+
+
 
     /**
      * Add method
