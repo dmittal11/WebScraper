@@ -52,7 +52,11 @@ class WebscraperController extends AppController
           dd($response->isOk());
         }
 
-        $dom = str_get_html($response->body);
+        $data = json_decode($this->preg_match_single('/var allTyres = (.+);/', $response->body));
+
+        dd($data);
+
+        #$dom = str_get_html($response->body);
 
         //$x = 'Hello';
         //$x->dump();
@@ -60,10 +64,6 @@ class WebscraperController extends AppController
         //$dom->dump();
 
       //  dd($dom);
-
-          foreach($dom->find('script') as $element){
-            $element->dump();
-          }
 
         //dd('die');
 
@@ -79,7 +79,12 @@ class WebscraperController extends AppController
 
 
 
-
+    /*
+    * preg_match() and return match
+    */
+    function preg_match_single($pattern, $subject) {
+       return preg_match($pattern, $subject, $matches) ? end($matches) : null;
+    }
 
     /**
      * View method
