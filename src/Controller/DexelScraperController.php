@@ -71,16 +71,25 @@ class DexelScraperController extends AppController
 
         $n = 1;
 
+        /*
+
+        Tyre Size: Width/Profile(Aspect Ratio). rim speed (load)
+
+
+        */
+
 
 
         foreach ($data as $get_data) {
+
+            dd($get_data);
 
             $dexelScraper = $this->DexelScraper->newEntity();
 
             $dexelScraper->id = $n;
             $dexelScraper->Brand_name = $get_data->manufacturer;
             $dexelScraper->Pattern_name = $get_data->pattern;
-            $dexelScraper->Tyre_size = $this->calculateTyreSize($get_data->width, $get_data->profile, $get_data->rim);
+            $dexelScraper->Tyre_size = $get_data->width .'/'. $get_data->profile .'. ' $get_data->rim . ' '.$get_data->speed.' ('.$get_data->load.')';
             $dexelScraper->Price = $get_data->price;
             $dexelScraper->Url = $url.'/shopping/tyre-results?width='.$width.'&profile='.$aspectRatio.'&rim='.$rim.'&speed=.';
             $dexelScraper->Scrape_date = $date;

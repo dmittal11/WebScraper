@@ -20,9 +20,83 @@ class NationalScraperController extends AppController
      */
     public function index()
     {
+
+      $http = new Client();
+
+      $url = 'http://www.dexel.co.uk';
+      $width = 205;
+      $aspectRatio = 55;
+      $rim = 16;
+
+      /*
+
+      $response = $http->get(
+        $url.'/shopping/tyre-results?width='.$width.'&profile='.$aspectRatio.'&rim='.$rim.'&speed=.'
+      );
+
+      */
+
+      $response = $http->get(
+        $url.'/shopping/tyre-results?width='.$width.'&profile='.$aspectRatio.'&rim='.$rim.'&speed=.'
+      );
+
+      usleep(1000000 + rand(0, 4000000));
+
+      if(!$response->isOk()){
+        dd($response->isOk());
+      }
+
+      $data = json_decode($this->preg_match_single('/var allTyres = (.+);/', $response->body));
+
+      //dd($data[1]->id);
+
+        $dexelScraper = $this->DexelScraper->newEntity();
+
+        //dd($dexelScraper);
+
+      //  $time = Time::now();
+
+        date_default_timezone_set('Europe/London');
+        $date = date('d/m/Y h:i:s a', time());
+
+
+        $n = 1;
+
+
+
+        foreach ($data as $get_data) {
+
+            $dexelScraper = $this->DexelScraper->newEntity();
+
+            $dexelScraper->id = $n;
+            $dexelScraper->Brand_name = $get_data->manufacturer;
+            $dexelScraper->Pattern_name = $get_data->pattern;
+            $dexelScraper->Tyre_size = $this->calculateTyreSize($get_data->width, $get_data->profile, $get_data->rim);
+            $dexelScraper->Price = $get_data->price;
+            $dexelScraper->Url = $url.'/shopping/tyre-results?width='.$width.'&profile='.$aspectRatio.'&rim='.$rim.'&speed=.';
+            $dexelScraper->Scrape_date = $date;
+
+          //  dd($dexelScraper);
+
+
+            $this->DexelScraper->save($dexelScraper);
+
+            $n++;
+
+
+        }
+
+      dd('die');
+
+
+
+
+      /*
         $nationalScraper = $this->paginate($this->NationalScraper);
 
         $this->set(compact('nationalScraper'));
+
+        */
     }
 
     /**
@@ -103,5 +177,25 @@ class NationalScraperController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    public function calculateTyreSize($width, $profile, $rim){
+
+      // Step 1: Multiply a tyre’s width by the aspect ratio to get aspect height
+
+      $aspectHeight = $width * ($profile / 100);
+
+      // Step 2: Convert into inches
+
+      $inches = $aspectHeight / 25.4;
+
+      // Step 3: Double the aspect height
+
+      $doubleAspectHeight = 2 * $inches;
+
+      // Step 4: Add inside diameter of tyre
+
+      return $doubleAspectHeight + $rim;
+
     }
 }

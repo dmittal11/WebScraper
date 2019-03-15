@@ -31,22 +31,31 @@ class ThetyregroupScraperController extends AppController
       //$aspectRatio = 55;
       //$rim = 16;
 
-      $response = $http->post('http://www.thetyregroup.co.uk/', [
-        'width' => '115',
-        'profile' => '70',
-        'rim' => '15',
-        'speed' => 'M',
-        'brand' => 'CONTINENTAL'
-
+      $response = $http->get('http://www.thetyregroup.co.uk/', [
+        'width' => '205',
+        'profile' => '55',
+        'rim' => '16',
+        'speed' => '',
+        'brand' => 'CONTINENTAL',
+        'x' => rand(0, 150),
+        'y' => rand(0, 30),
       ]);
 
-      dd([$response->isOk(), $response->getStatusCode()]);
+      /*
+          Use the code: $response->isOk(); And $response->getStatusCode(); to make sure get or post request works.
+          Status code, as can been seen in the header.. on network in the browser, the status code should be 200. i.e. OK.
 
+          additional information for the form that can be used for post or get request can be obtained from the header shown in network in the browser.  
 
+      */
 
-      $dom = file_get_html($response->body);
+      usleep(1000000 + rand(0, 4000000));
+
+      $dom = str_get_html($response->body);
 
       $dom->dump();
+
+      dd('After');
 
 
 
