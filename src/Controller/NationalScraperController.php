@@ -3,6 +3,12 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 
+use Cake\Http\Client;
+
+use Cake\I18n\Time;
+
+include_once "simple_html_dom.php";
+
 /**
  * NationalScraper Controller
  *
@@ -23,10 +29,12 @@ class NationalScraperController extends AppController
 
       $http = new Client();
 
-      $url = 'http://www.dexel.co.uk';
-      $width = 205;
-      $aspectRatio = 55;
-      $rim = 16;
+      $url = 'https://www.national.co.uk';
+      $width = 165;
+      $aspectRatio = 60;
+      $rim = 15;
+      $rating = 'H';
+      $loadIndex = 77;
 
       /*
 
@@ -37,8 +45,12 @@ class NationalScraperController extends AppController
       */
 
       $response = $http->get(
-        $url.'/shopping/tyre-results?width='.$width.'&profile='.$aspectRatio.'&rim='.$rim.'&speed=.'
+        $url.'/tyres-search?Width='.$width.'&Profile='.$aspectRatio.'&Diameter='.$rim.'&Rating='.$rating.'&LoadIndex='.$loadIndex
       );
+
+      //dd($url.'/tyres-search?Width='.$width.'&Profile='.$aspectRatio.'&Diameter='.$rim.'&Rating='.$rating.'&LoadIndex='.$loadIndex);
+
+
 
       usleep(1000000 + rand(0, 4000000));
 
@@ -46,23 +58,64 @@ class NationalScraperController extends AppController
         dd($response->isOk());
       }
 
-      $data = json_decode($this->preg_match_single('/var allTyres = (.+);/', $response->body));
+      $dom = str_get_html($response->body);
+
+    //  $dom->dump();
+
+  //  $data = [];
+
+
+       $input_data = [
+
+         "Brand_name" => $dom->find("#MainContent_ucTyreResults_rptTyres_imgBrand_0", 0)->innertext,
+         "Price" => $dom->find("#MainContent_ucTyreResults_rptTyres_ddlOrder_0", 0)->children(0)->plaintext,
+
+
+      ];
+
+       dd($input_data["Brand_name"]);
+
+       //dd($result);
+
+       //$result = floatval($data);
+
+
+
+
+       $data = [
+         "Price" => $this->preg_match_single('/([0-9]+\.[0-9]+)/', $input_data["Price"]),
+
+       ];
+
+      $result = $this->preg_match_single('/([0-9]+\.[0-9]+)/', $data);
+
+
+
+
+
+       dd($result);
+
+
+
+    //  $data = json_decode($this->preg_match_single('/var allTyres = (.+);/', $response->body));
 
       //dd($data[1]->id);
 
-        $dexelScraper = $this->DexelScraper->newEntity();
+
+
+      //  $dexelScraper = $this->DexelScraper->newEntity();
 
         //dd($dexelScraper);
 
       //  $time = Time::now();
 
-        date_default_timezone_set('Europe/London');
-        $date = date('d/m/Y h:i:s a', time());
+        //date_default_timezone_set('Europe/London');
+        //$date = date('d/m/Y h:i:s a', time());
 
 
-        $n = 1;
+        //$n = 1;
 
-
+        /*
 
         foreach ($data as $get_data) {
 
@@ -85,6 +138,31 @@ class NationalScraperController extends AppController
 
 
         }
+        */
+        // $result = $dom->find('select[name=ctl00$MainContent$ucTyreResults$rptTyres$ctl01$ddlOrder]');
+
+         // foreach ($result as $r) {
+         //
+         //   array_push($data, $r->plaintext);
+         // }
+
+        // foreach ($dom->find('select[name=ctl00$MainContent$ucTyreResults$rptTyres$ctl01$ddlOrder]') as $result) {
+
+           //$result->dump();
+
+           //dd('die');
+
+           //foreach ($result->find('option') as $result){
+
+           //$result->dump();
+
+           //$result = $result->find('option[value=1]', 0)->plaintext;
+
+             //array_push($data, $result);
+           //}
+
+         //}
+
 
       dd('die');
 
@@ -198,4 +276,9 @@ class NationalScraperController extends AppController
       return $doubleAspectHeight + $rim;
 
     }
+
+    function preg_match_single($pattern, $subject) {
+       return preg_match($pattern, $subject, $matches) ? end($matches) : null;
+    }
+
 }

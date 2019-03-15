@@ -55,6 +55,8 @@ class DexelScraperController extends AppController
         dd($response->isOk());
       }
 
+      
+
       $data = json_decode($this->preg_match_single('/var allTyres = (.+);/', $response->body));
 
       //dd($data[1]->id);
