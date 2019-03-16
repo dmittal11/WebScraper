@@ -55,13 +55,15 @@ class DexelScraperController extends AppController
         dd($response->isOk());
       }
 
-      
+
 
       $data = json_decode($this->preg_match_single('/var allTyres = (.+);/', $response->body));
 
+    //  dd($data);
+
       //dd($data[1]->id);
 
-        $dexelScraper = $this->DexelScraper->newEntity();
+      //  $dexelScraper = $this->DexelScraper->newEntity();
 
         //dd($dexelScraper);
 
@@ -84,14 +86,14 @@ class DexelScraperController extends AppController
 
         foreach ($data as $get_data) {
 
-            dd($get_data);
+          //  dd($get_data);
 
             $dexelScraper = $this->DexelScraper->newEntity();
 
             $dexelScraper->id = $n;
             $dexelScraper->Brand_name = $get_data->manufacturer;
             $dexelScraper->Pattern_name = $get_data->pattern;
-            $dexelScraper->Tyre_size = $get_data->width .'/'. $get_data->profile .'. ' $get_data->rim . ' '.$get_data->speed.' ('.$get_data->load.')';
+            $dexelScraper->Tyre_size = $get_data->width .'/'. $get_data->profile .'. ' .$get_data->rim . ' '.$get_data->speed.' ('.$get_data->load.')';
             $dexelScraper->Price = $get_data->price;
             $dexelScraper->Url = $url.'/shopping/tyre-results?width='.$width.'&profile='.$aspectRatio.'&rim='.$rim.'&speed=.';
             $dexelScraper->Scrape_date = $date;
