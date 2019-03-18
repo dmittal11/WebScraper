@@ -8,13 +8,13 @@ use Cake\Http\Client;
 include_once "simple_html_dom.php";
 
 /**
- * ThetyregroupScraper Controller
+ * WebsiteScraper Controller
  *
- * @property \App\Model\Table\ThetyregroupScraperTable $ThetyregroupScraper
+ * @property \App\Model\Table\WebsiteScraperTable $WebsiteScraper
  *
- * @method \App\Model\Entity\ThetyregroupScraper[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
+ * @method \App\Model\Entity\WebsiteScraper[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
-class ThetyregroupScraperController extends AppController
+class WebsiteScraperController extends AppController
 {
 
     /**
@@ -24,6 +24,151 @@ class ThetyregroupScraperController extends AppController
      */
     public function index()
     {
+
+
+
+
+
+       $this->webScraping($data[0]);
+
+
+       dd('die');
+
+        // $this->paginate = [
+        //     'contain' => ['TyreDetails', 'WebsiteDetails']
+        // ];
+        // $websiteScraper = $this->paginate($this->WebsiteScraper);
+        //
+        // $this->set(compact('websiteScraper'));
+    }
+
+    /**
+     * View method
+     *
+     * @param string|null $id Website Scraper id.
+     * @return \Cake\Http\Response|void
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function view($id = null)
+    {
+        $websiteScraper = $this->WebsiteScraper->get($id, [
+            'contain' => ['TyreDetails', 'WebsiteDetails']
+        ]);
+
+        $this->set('websiteScraper', $websiteScraper);
+    }
+
+    /**
+     * Add method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function add()
+    {
+        $websiteScraper = $this->WebsiteScraper->newEntity();
+        if ($this->request->is('post')) {
+            $websiteScraper = $this->WebsiteScraper->patchEntity($websiteScraper, $this->request->getData());
+            if ($this->WebsiteScraper->save($websiteScraper)) {
+                $this->Flash->success(__('The website scraper has been saved.'));
+
+                return $this->redirect(['action' => 'index']);
+            }
+            $this->Flash->error(__('The website scraper could not be saved. Please, try again.'));
+        }
+        $tyreDetails = $this->WebsiteScraper->TyreDetails->find('list', ['limit' => 200]);
+        $websiteDetails = $this->WebsiteScraper->WebsiteDetails->find('list', ['limit' => 200]);
+        $this->set(compact('websiteScraper', 'tyreDetails', 'websiteDetails'));
+    }
+
+    /**
+     * Edit method
+     *
+     * @param string|null $id Website Scraper id.
+     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function edit($id = null)
+    {
+        $websiteScraper = $this->WebsiteScraper->get($id, [
+            'contain' => []
+        ]);
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $websiteScraper = $this->WebsiteScraper->patchEntity($websiteScraper, $this->request->getData());
+            if ($this->WebsiteScraper->save($websiteScraper)) {
+                $this->Flash->success(__('The website scraper has been saved.'));
+
+                return $this->redirect(['action' => 'index']);
+            }
+            $this->Flash->error(__('The website scraper could not be saved. Please, try again.'));
+        }
+        $tyreDetails = $this->WebsiteScraper->TyreDetails->find('list', ['limit' => 200]);
+        $websiteDetails = $this->WebsiteScraper->WebsiteDetails->find('list', ['limit' => 200]);
+        $this->set(compact('websiteScraper', 'tyreDetails', 'websiteDetails'));
+    }
+
+    /**
+     * Delete method
+     *
+     * @param string|null $id Website Scraper id.
+     * @return \Cake\Http\Response|null Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function delete($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+        $websiteScraper = $this->WebsiteScraper->get($id);
+        if ($this->WebsiteScraper->delete($websiteScraper)) {
+            $this->Flash->success(__('The website scraper has been deleted.'));
+        } else {
+            $this->Flash->error(__('The website scraper could not be deleted. Please, try again.'));
+        }
+
+        return $this->redirect(['action' => 'index']);
+    }
+
+
+
+    public function webScraping($data){
+
+      $http = new Client();
+      //$url = 'http://www.dexel.co.uk';
+      //$width = 205;
+      //$aspectRatio = 55;
+      //$rim = 16;
+
+      $this->loadModel('TyreDetails');
+      $this->loadModel('WebsiteDetails');
+
+
+      $websiteDetail = $this->WebsiteDetails->find('all')->toArray();
+      $tyreDetail = $this->TyreDetails->find('all')->toArray();
+
+
+      foreach ($websiteDetail as $webDetail) {
+
+        if($webDetail->Url == 'http://www.dexel.co.uk')
+          {
+
+          }
+          else if($webDetail->Url == 'http://www.national.co.uk'){
+
+            foreach($tyreDetail as $tyDetail){
+
+                $response = $http->get($webDetail->Url.'/tyres-search?Width='.$tyDetail->width.'&Profile='.$tyDetail->aspect_ratio.'&Diamteter='.$tyDetail->rim.'&Rating=&loadIndex=');
+                $this->
+            }
+
+
+
+          }
+        }
+      }
+
+      //dd($websiteDetail);
+
+      $http = new Client();
+      $response = $http->get('https://www.national.co.uk/');
+
 
       foreach($tyreSizes as $size){
         $data[] =
@@ -38,103 +183,6 @@ class ThetyregroupScraperController extends AppController
               'y' => '12'
           ];
       }
-
-       $this->webScraping($data[0]);
-
-
-       dd('die');
-
-
-
-    }
-
-    /**
-     * View method
-     *
-     * @param string|null $id Thetyregroup Scraper id.
-     * @return \Cake\Http\Response|void
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function view($id = null)
-    {
-        $thetyregroupScraper = $this->ThetyregroupScraper->get($id, [
-            'contain' => []
-        ]);
-
-        $this->set('thetyregroupScraper', $thetyregroupScraper);
-    }
-
-    /**
-     * Add method
-     *
-     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
-     */
-    public function add()
-    {
-        $thetyregroupScraper = $this->ThetyregroupScraper->newEntity();
-        if ($this->request->is('post')) {
-            $thetyregroupScraper = $this->ThetyregroupScraper->patchEntity($thetyregroupScraper, $this->request->getData());
-            if ($this->ThetyregroupScraper->save($thetyregroupScraper)) {
-                $this->Flash->success(__('The thetyregroup scraper has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The thetyregroup scraper could not be saved. Please, try again.'));
-        }
-        $this->set(compact('thetyregroupScraper'));
-    }
-
-    /**
-     * Edit method
-     *
-     * @param string|null $id Thetyregroup Scraper id.
-     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function edit($id = null)
-    {
-        $thetyregroupScraper = $this->ThetyregroupScraper->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $thetyregroupScraper = $this->ThetyregroupScraper->patchEntity($thetyregroupScraper, $this->request->getData());
-            if ($this->ThetyregroupScraper->save($thetyregroupScraper)) {
-                $this->Flash->success(__('The thetyregroup scraper has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The thetyregroup scraper could not be saved. Please, try again.'));
-        }
-        $this->set(compact('thetyregroupScraper'));
-    }
-
-    /**
-     * Delete method
-     *
-     * @param string|null $id Thetyregroup Scraper id.
-     * @return \Cake\Http\Response|null Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function delete($id = null)
-    {
-        $this->request->allowMethod(['post', 'delete']);
-        $thetyregroupScraper = $this->ThetyregroupScraper->get($id);
-        if ($this->ThetyregroupScraper->delete($thetyregroupScraper)) {
-            $this->Flash->success(__('The thetyregroup scraper has been deleted.'));
-        } else {
-            $this->Flash->error(__('The thetyregroup scraper could not be deleted. Please, try again.'));
-        }
-
-        return $this->redirect(['action' => 'index']);
-    }
-
-    public function webScraping($data){
-
-      $http = new Client();
-      //$url = 'http://www.dexel.co.uk';
-      //$width = 205;
-      //$aspectRatio = 55;
-      //$rim = 16;
 
 
       $response = $http->get('http://www.thetyregroup.co.uk/tyre-results', $data);
@@ -182,6 +230,15 @@ class ThetyregroupScraperController extends AppController
 
 
      }
+
+
+      public function webScrapeNational(){
+
+
+
+
+
+      }
 
 
 
@@ -234,5 +291,4 @@ class ThetyregroupScraperController extends AppController
       preg_match_all($regex, $data, $matches, PREG_OFFSET_CAPTURE);
       return $matches;
     }
-
 }

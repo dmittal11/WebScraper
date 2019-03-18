@@ -27,36 +27,25 @@ class NationalScraperController extends AppController
     public function index()
     {
 
-      $inputData[0] = [
-        'url' => 'https://www.national.co.uk',
-        'width' => '165',
-        'aspectRatio' => '60',
-        'rim' => '15',
-        'rating' => 'H',
-        'loadIndex' => '77'
-      ];
 
-      $inputData[1] = [
-        'url' => 'https://www.national.co.uk',
-        'width' => '150',
-        'aspectRatio' => '60',
-        'rim' => '15',
-        'rating' => 'H',
-        'loadIndex' => '77'
-      ];
+      $http = new Client();
 
-      $inputData[2] = [
-        'url' => 'https://www.national.co.uk',
-        'width' => '145',
-        'aspectRatio' => '60',
-        'rim' => '15',
-        'rating' => 'H',
-        'loadIndex' => '77'
-      ];
+      $this->loadModel('TyreDetails');
+      $this->loadModel('WebsiteDetails');
+
+      $websiteDetail = $this->WebsiteDetails->find('all')->toArray();
+      $tyreDetail = $this->TyreDetails->find('all')->toArray();
+
+      foreach ($tyreDetail as $tyDetail) {
+        usleep(1000000 + rand(0, 4000000));
+        $response = $http->get($webDetail->Url.'/tyres-search?Width='.$tyDetail->width.'&Profile='.$tyDetail->aspect_ratio.'&Diamteter='.$tyDetail->rim.'&Rating=&loadIndex=');
+        $this->webScraping($response->body, $tyDetail);
+      }
 
 
 
-      $this->webScraping($inputData[0]);
+
+
 
 
 
@@ -150,64 +139,37 @@ class NationalScraperController extends AppController
         return $this->redirect(['action' => 'index']);
     }
 
-    public function webScraping($data){
+    public function webScraping($data, $tyre_details){
 
-      $http = new Client();
-
-
-      $response = $http->get(
-        $data['url'].'/tyres-search?Width='.$data['width'].'&Profile='.$data['aspectRatio'].'&Diameter='.$data["rim"].'&Rating='.$data["rating"].'&LoadIndex='.$data["loadIndex"]
-      );
-
-
-      usleep(1000000 + rand(0, 4000000));
+      $this->loadModel('WebsiteScraper');
 
       if(!$response->isOk()){
         dd($response->isOk());
       }
 
-      $dom = str_get_html($response->body);
+      $dom = str_get_html($data);
 
-    //  $dom->dump();
+      $website_id = $this->WebsiteScraper->find('id', [
+        'contain' => [
+          'Url' => 'national'
+        ]
+      ]);
 
-  //  $data = [];\
+       $web_data = [
 
-/*
-
-        $get_data = [
-
-          "Brand_name" => $dom->find("img[id=MainContent_ucTyreResults_rptTyres_imgBrand_0]", 0)->alt,
-          "Pattern_name" => $dom->find("a[id=MainContent_ucTyreResults_rptTyres_hypPattern_0]", 0)->plaintext,
-          "Price" => $dom->find("#MainContent_ucTyreResults_rptTyres_ddlOrder_0", 0)->children(0)->plaintext,
-          "Width" => $this->findValue("#MainContent_ddlWidth", "option", $dom),
-          "AspectRatio" => $this->findValue("#MainContent_ddlProfile", "option", $dom),
-          "Rim" => $this->findValue("#MainContent_ddlDiameter", "option", $dom),
-          "Load_index" => $dom->find("#MainContent_ucTyreResults_rptTyres_divTyre_0", 0)->children(0)->children(1)->children(2)->plaintext,
-          "Speed_rating" => $dom->find("#MainContent_ucTyreResults_rptTyres_divTyre_0", 0)->children(0)->children(1)->children(3)->plaintext,
-          "Url" => $data['url'].'/tyres-search?Width='.$data['width'].'&Profile='.$data['aspectRatio'].'&Diameter='.$data["rim"].'&Rating='.$data["rating"].'&LoadIndex='.$data["loadIndex"]
-
-        ];
-
-  */
-
-       $data[0] = [
+         [
 
          "Brand_name" => $this->preg_match_single('/^([\w\-]+)/', $dom->find("img[id=MainContent_ucTyreResults_rptTyres_imgBrand_0]", 0)->alt),
          "Pattern_name" => $dom->find("a[id=MainContent_ucTyreResults_rptTyres_hypPattern_0]", 0)->plaintext,
          "Price" => $this->preg_match_single('/([0-9]+\.[0-9]+)/', $dom->find("#MainContent_ucTyreResults_rptTyres_ddlOrder_0", 0)->children(0)->plaintext),
-         "Width" => $this->findValue("#MainContent_ddlWidth", "option", $dom),
-         "AspectRatio" => $this->findValue("#MainContent_ddlProfile", "option", $dom),
-         "Rim" => $this->findValue("#MainContent_ddlDiameter", "option", $dom),
          "Load_index" => $this->preg_match_single('/(\d+)/', $dom->find("#MainContent_ucTyreResults_rptTyres_divTyre_0", 0)->children(0)->children(1)->children(2)->plaintext),
          "Speed_rating" => substr($dom->find("#MainContent_ucTyreResults_rptTyres_divTyre_0", 0)->children(0)->children(1)->children(3)->plaintext, -1),
-         "Url" => $data['url'].'/tyres-search?Width='.$data['width'].'&Profile='.$data['aspectRatio'].'&Diameter='.$data["rim"].'&Rating='.$data["rating"].'&LoadIndex='.$data["loadIndex"]
-      ];
+         "Url" => 'https://www.national.co.uk/tyres-search?Width='.$tyre_details->width.'&Profile='.$tyre_details->aspect_ratio.'&Diameter='.$tyre_details->rim.'&Rating='.$data["rating"].'&LoadIndex='.$data["loadIndex"],
+         "tyre_detail_id" => $tyre_details->id,
+         "website_detail_id" => $website_id
+      ],
 
-    //  dd([$get_data, $data]);
-
-      $this->saveData($data[0]);
-
-      $data[1] = [
+      [
 
         "Brand_name" => $this->preg_match_single('/^([\w\-]+)/', $dom->find("img[id=MainContent_ucTyreResults_rptTyres_imgBrand_1]", 0)->alt),
         "Pattern_name" => $dom->find("a[id=MainContent_ucTyreResults_rptTyres_hypPattern_1]", 0)->plaintext,
@@ -217,12 +179,12 @@ class NationalScraperController extends AppController
         "Rim" => $this->findValue("#MainContent_ddlDiameter", "option", $dom),
         "Load_index" => $this->preg_match_single('/(\d+)/', $dom->find("#MainContent_ucTyreResults_rptTyres_divTyre_1", 0)->children(0)->children(1)->children(2)->plaintext),
         "Speed_rating" => substr($dom->find("#MainContent_ucTyreResults_rptTyres_divTyre_1", 0)->children(0)->children(1)->children(3)->plaintext, -1),
-        "Url" => $data['url'].'/tyres-search?Width='.$data['width'].'&Profile='.$data['aspectRatio'].'&Diameter='.$data["rim"].'&Rating='.$data["rating"].'&LoadIndex='.$data["loadIndex"]
-     ];
+        "Url" => 'https://www.national.co.uk/tyres-search?Width='.$tyre_details->width.'&Profile='.$tyre_details->aspect_ratio.'&Diameter='.$tyre_details->rim.'&Rating='.$data["rating"].'&LoadIndex='.$data["loadIndex"],
+        "tyre_detail_id" => $tyre_details->id,
+        "website_detail_id" => $website_id
+     ],
 
-       $this->saveData($data[1]);
-
-       $data[2] = [
+     [
 
          "Brand_name" => $this->preg_match_single('/^([\w\-]+)/', $dom->find("img[id=MainContent_ucTyreResults_rptTyres_imgBrand_2]", 0)->alt),
          "Pattern_name" => $dom->find("a[id=MainContent_ucTyreResults_rptTyres_hypPattern_2]", 0)->plaintext,
@@ -232,10 +194,17 @@ class NationalScraperController extends AppController
          "Rim" => $this->findValue("#MainContent_ddlDiameter", "option", $dom),
          "Load_index" => $this->preg_match_single('/(\d+)/', $dom->find("#MainContent_ucTyreResults_rptTyres_divTyre_2", 0)->children(0)->children(1)->children(2)->plaintext),
          "Speed_rating" => substr($dom->find("#MainContent_ucTyreResults_rptTyres_divTyre_2", 0)->children(0)->children(1)->children(3)->plaintext, -1),
-         "Url" => $data['url'].'/tyres-search?Width='.$data['width'].'&Profile='.$data['aspectRatio'].'&Diameter='.$data["rim"].'&Rating='.$data["rating"].'&LoadIndex='.$data["loadIndex"]
-      ];
+         "Url" => 'https://www.national.co.uk/tyres-search?Width='.$tyre_details->width.'&Profile='.$tyre_details->aspect_ratio.'&Diameter='.$tyre_details->rim.'&Rating='.$data["rating"].'&LoadIndex='.$data["loadIndex"],
+         "tyre_detail_id" => $tyre_details->id,
+         "website_detail_id" => $website_id
 
-      $this->saveData($data[2]);
+
+      ]
+    ];
+
+    dd($web_data);
+
+      $this->WebsiteScraper->saveData($web_data);
 
 
     }
