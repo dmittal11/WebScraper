@@ -147,7 +147,7 @@ class NationalScraperController extends AppController
 
       $dom = str_get_html($data);
 
-      $website_id = $this->WebsiteDetails->find('all', [
+      $website = $this->WebsiteDetails->find('all', [
         'conditions' => [
           'Url' => 'national'
         ]
@@ -167,7 +167,7 @@ class NationalScraperController extends AppController
          "Speed_rating" => substr($dom->find("#MainContent_ucTyreResults_rptTyres_divTyre_0", 0)->children(0)->children(1)->children(3)->plaintext, -1),
          "Url" => 'https://www.national.co.uk/tyres-search?Width='.$tyre_details->width.'&Profile='.$tyre_details->aspect_ratio.'&Diameter='.$tyre_details->rim.'&Rating='.$data["rating"].'&LoadIndex='.$data["loadIndex"],
          "tyre_detail_id" => $tyre_details->id,
-         "website_detail_id" => $website_id
+         "website_detail_id" => $website->id
       ],
 
       [
@@ -182,7 +182,7 @@ class NationalScraperController extends AppController
         "Speed_rating" => substr($dom->find("#MainContent_ucTyreResults_rptTyres_divTyre_1", 0)->children(0)->children(1)->children(3)->plaintext, -1),
         "Url" => 'https://www.national.co.uk/tyres-search?Width='.$tyre_details->width.'&Profile='.$tyre_details->aspect_ratio.'&Diameter='.$tyre_details->rim.'&Rating='.$data["rating"].'&LoadIndex='.$data["loadIndex"],
         "tyre_detail_id" => $tyre_details->id,
-        "website_detail_id" => $website_id
+        "website_detail_id" => $website->id
      ],
 
      [
@@ -197,7 +197,7 @@ class NationalScraperController extends AppController
          "Speed_rating" => substr($dom->find("#MainContent_ucTyreResults_rptTyres_divTyre_2", 0)->children(0)->children(1)->children(3)->plaintext, -1),
          "Url" => 'https://www.national.co.uk/tyres-search?Width='.$tyre_details->width.'&Profile='.$tyre_details->aspect_ratio.'&Diameter='.$tyre_details->rim.'&Rating='.$data["rating"].'&LoadIndex='.$data["loadIndex"],
          "tyre_detail_id" => $tyre_details->id,
-         "website_detail_id" => $website_id
+         "website_detail_id" => $website->id
 
 
       ]

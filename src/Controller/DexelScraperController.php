@@ -34,7 +34,7 @@ class DexelScraperController extends AppController
       $this->loadModel('TyreDetails');
       $tyreDetail = $this->TyreDetails->find('all')->toArray();
 
-      $website_id = $this->WebsiteDetails->find('all', [
+      $website = $this->WebsiteDetails->find('all', [
         'conditions' => [
           'Url' => 'dexel'
         ]
@@ -68,7 +68,7 @@ class DexelScraperController extends AppController
           "Price" => $get_data->price,
           "Url" => 'http://www.dexel.co.uk/shopping/tyre-results?width='.$tyDetail->width.'&profile='.$tyDetail->aspect_ratio.'&rim='.$tyDetail->rim.'&speed=.'
           "tyre_detail_id" => $tyDetail->id,
-          "website_detail_id" => $website_id
+          "website_detail_id" => $website->id
         ];
 
         $n++;

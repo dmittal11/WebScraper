@@ -165,7 +165,7 @@ class ThetyregroupScraperController extends AppController
 
       $dom = str_get_html($data);
 
-      $website_id = $this->WebsiteDetails->find('all', [
+      $website = $this->WebsiteDetails->find('all', [
         'conditions' => [
           'Url' => 'thetyregroup'
         ]
@@ -199,7 +199,7 @@ class ThetyregroupScraperController extends AppController
             "Load_index" => $this->preg_match_many('/[\s,]+/', $ele->find('.tyreTitle', 0)->plaintext)[0][1][0],
             "Url" => "http://www.thetyregroup.co.uk/tyre-results",
             "tyre_detail_id" => $tyre_detail->id,
-            "website_detail_id" => $website_id
+            "website_detail_id" => $website->id
 
           ];
 
@@ -208,7 +208,7 @@ class ThetyregroupScraperController extends AppController
 
       }
 
-      $this->WebsiteDetails->saveData($input_data);
+      $this->WebsiteScraper->saveData($input_data);
 
 
 
