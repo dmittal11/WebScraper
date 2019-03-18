@@ -25,21 +25,31 @@ class ThetyregroupScraperController extends AppController
     public function index()
     {
 
-      foreach($tyreSizes as $size){
-        $data[] =
-            [
-              'form' => '1',
-              'width' => $size['width'],
-              'profile' => $size['profile'],
-              'rim' => $size['rim'],
-              'speed' => '',
-              'brand' => 'CONTINENTAL',
-              'x' => '76',
-              'y' => '12'
-          ];
+
+
+            $http = new Client();
+
+            $this->loadModel('TyreDetails');
+            $tyreDetail = $this->TyreDetails->find('all')->toArray();
+
+            foreach ($tyreDetail as $tyDetail) {
+              usleep(1000000 + rand(0, 4000000));
+              $response = $http->get('http://www.thetyregroup.co.uk/tyre-results',[
+                'form' => '1',
+                'width' => $tyDetail->width,
+                'profile' => $tyDetail->aspect_ratio,
+                'rim' => $tyDetail->rim,
+                'speed' => '',
+                'brand' => 'CONTINENTAL',
+                'x' => '76',
+                'y' => '12'
+              ]);
+
+              $this->webScraping($response->body, $tyDetail);
+
+
       }
 
-       $this->webScraping($data[0]);
 
 
        dd('die');
@@ -128,16 +138,15 @@ class ThetyregroupScraperController extends AppController
         return $this->redirect(['action' => 'index']);
     }
 
-    public function webScraping($data){
+    public function webScraping($data, $tyre_detail){
 
-      $http = new Client();
+
       //$url = 'http://www.dexel.co.uk';
       //$width = 205;
       //$aspectRatio = 55;
       //$rim = 16;
 
 
-      $response = $http->get('http://www.thetyregroup.co.uk/tyre-results', $data);
 
       //  usleep(1000000 + rand(0, 4000000));
 
@@ -149,6 +158,21 @@ class ThetyregroupScraperController extends AppController
 
       //  $data = [];
 
+      $this->loadModel('WebsiteScraper');
+      $this->loadModel('WebsiteDetails');
+
+
+
+      $dom = str_get_html($data);
+
+      $website_id = $this->WebsiteDetails->find('all', [
+        'conditions' => [
+          'Url' => 'thetyregroup'
+        ]
+      ])
+      ->first();
+
+
 
         $n = 0;
 
@@ -156,20 +180,27 @@ class ThetyregroupScraperController extends AppController
 
           $pieces = preg_split('/[\s,]+/', $ele->find('.tyreTitle', 0)->plaintext);
 
+          dd($pieces);
+
           $brand = $pieces[0];
           $pattern = $pieces[1] . ' ' . $pieces[2];
+
+          //"Speed_rating" => $this->preg_match_single('/[a-zA-Z]/', $ele->children(1)->children(1)->children(0)->plaintext),
 
           $input_data[$n] = [
 
             "Brand_name" => $brand,
-            "Pattern_name" => preg_split('/[\s,]+/', $ele->children(1)->children(0)->children(0)->plaintext)[1] .' '. preg_split('/[\s,]+/', $ele->children(1)->children(0)->children(0)->plaintext)[2],
+            "Pattern_name" => $pattern,
             "Price" => $this->preg_match_single('/([0-9]+\.[0-9]+)/', $element1[$n]->plaintext),
-            "Width" => $this->preg_match_single('/(\d+)/', $ele->children(1)->children(1)->children(0)->plaintext),
-            "AspectRatio" => $this->preg_match_many('/(\d+)/', $ele->children(1)->children(1)->children(0)->plaintext)[0][1][0],
-            "Rim" => $this->preg_match_many('/(\d+)/', $ele->children(1)->children(1)->children(0)->plaintext)[0][2][0],
-            "Speed_rating" => $this->preg_match_single('/[a-zA-Z]/', $ele->children(1)->children(1)->children(0)->plaintext),
-            "Load_index" => $this->preg_match_many('/[0-9]+/', $ele->children(1)->children(0)->children(0)->plaintext)[0][1][0],
-            "Url" => "http://www.thetyregroup.co.uk/tyre-results"
+            "Width" => $tyre_detail->width,
+            "AspectRatio" => $tyre_detail->aspect_ratio,
+            "Rim" => $tyre_detail->rim,
+            "Speed_rating" => $this->preg_match_single('/[a-zA-Z]/', $ele->find('p',0)->plaintext),
+            "Load_index" => $this->preg_match_many('/[\s,]+/', $ele->find('.tyreTitle', 0)->plaintext)[0][1][0],
+            "Url" => "http://www.thetyregroup.co.uk/tyre-results",
+            "tyre_detail_id" => $tyre_detail->id,
+            "website_detail_id" => $website_id
+
           ];
 
           $n++;
@@ -177,41 +208,11 @@ class ThetyregroupScraperController extends AppController
 
       }
 
-      $this->saveData($input_data);
+      $this->WebsiteDetails->saveData($input_data);
 
 
 
      }
-
-
-
-
-
-    public function saveData($data){
-
-
-
-      foreach ($data as $get_data) {
-
-
-
-
-        date_default_timezone_set('Europe/London');
-        $date = date('d/m/Y h:i:s a', time());
-
-        $thetyregroupScraper = $this->ThetyregroupScraper->newEntity();
-
-        $thetyregroupScraper->Brand_name = $get_data["Brand_name"];
-        $thetyregroupScraper->Pattern_name = $get_data["Pattern_name"];
-        $thetyregroupScraper->Tyre_size = $get_data["Width"] .'/'. $get_data["AspectRatio"] .'. ' .$get_data["Rim"] . ' '.$get_data["Speed_rating"].' ('.$get_data["Load_index"].')';
-        $thetyregroupScraper->Price = $get_data["Price"];
-        $thetyregroupScraper->Url = $get_data["Url"];
-        $thetyregroupScraper->Scrape_date = $date;
-
-        $this->ThetyregroupScraper->save($thetyregroupScraper);
-      }
-    }
-
 
 
     public function findValue($parentElement, $childElement, $html){

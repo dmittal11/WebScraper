@@ -29,64 +29,59 @@ class DexelScraperController extends AppController
     public function index()
     {
 
-
       $http = new Client();
 
-      $url = 'http://www.dexel.co.uk';
-      $width = 205;
-      $aspectRatio = 55;
-      $rim = 16;
+      $this->loadModel('TyreDetails');
+      $tyreDetail = $this->TyreDetails->find('all')->toArray();
 
-      /*
+      $website_id = $this->WebsiteDetails->find('all', [
+        'conditions' => [
+          'Url' => 'dexel'
+        ]
+      ])
+      ->first();
 
-      $response = $http->get(
-        $url.'/shopping/tyre-results?width='.$width.'&profile='.$aspectRatio.'&rim='.$rim.'&speed=.'
-      );
+      $input_data = [];
 
-      */
+      $n = 0;
 
-      $response = $http->get(
-        $url.'/shopping/tyre-results?width='.$width.'&profile='.$aspectRatio.'&rim='.$rim.'&speed=.'
-      );
+      foreach ($tyreDetail as $tyDetail) {
+        usleep(1000000 + rand(0, 4000000));
+        $response = $http->get('http://www.dexel.co.uk/shopping/tyre-results?width='.$tyDetail->width.'&profile='.$tyDetail->aspect_ratio.'&rim='.$tyDetail->rim.'&speed=.');
 
-      usleep(1000000 + rand(0, 4000000));
 
       if(!$response->isOk()){
         dd($response->isOk());
       }
 
+        $data = json_decode($this->preg_match_single('/var allTyres = (.+);/', $response->body));
 
+        $input_data[$n] = [
 
-      $data = json_decode($this->preg_match_single('/var allTyres = (.+);/', $response->body));
+          "Brand_name" => $get_data->manufacturer,
+          "Pattern_name" => $get_data->pattern,
+          "Width" => $get_data->width,
+          "AspectRatio" => $get_data->profile,
+          "Rim" => $get_data->rim,
+          "Speed_rating" => $get_data->speed,
+          "Load_index" => $get_data->load
+          "Price" => $get_data->price,
+          "Url" => 'http://www.dexel.co.uk/shopping/tyre-results?width='.$tyDetail->width.'&profile='.$tyDetail->aspect_ratio.'&rim='.$tyDetail->rim.'&speed=.'
+          "tyre_detail_id" => $tyDetail->id,
+          "website_detail_id" => $website_id
+        ];
 
-    //  dd($data);
+        $n++;
 
-      //dd($data[1]->id);
+      }
 
-      //  $dexelScraper = $this->DexelScraper->newEntity();
+        // Tyre Size: Width/Profile(Aspect Ratio). rim speed (load)
 
-        //dd($dexelScraper);
+        $this->loadModel("WebsiteScraper");
 
-      //  $time = Time::now();
+        $this->WebsiteScraper->saveData($input_data);
 
-        date_default_timezone_set('Europe/London');
-        $date = date('d/m/Y h:i:s a', time());
-
-
-        $n = 1;
-
-        /*
-
-        Tyre Size: Width/Profile(Aspect Ratio). rim speed (load)
-
-
-        */
-
-
-
-        foreach ($data as $get_data) {
-
-          //  dd($get_data);
+      /*
 
             $dexelScraper = $this->DexelScraper->newEntity();
 
@@ -98,26 +93,22 @@ class DexelScraperController extends AppController
             $dexelScraper->Url = $url.'/shopping/tyre-results?width='.$width.'&profile='.$aspectRatio.'&rim='.$rim.'&speed=.';
             $dexelScraper->Scrape_date = $date;
 
-          //  dd($dexelScraper);
-
-
             $this->DexelScraper->save($dexelScraper);
 
-            $n++;
 
 
-        }
-
-      dd('die');
 
 
-      /*
+
+
+
         $dexelScraper = $this->paginate($this->DexelScraper);
 
         $this->set(compact('dexelScraper'));
 
         */
     }
+
 
 
     /**

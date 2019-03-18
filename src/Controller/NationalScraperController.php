@@ -31,15 +31,13 @@ class NationalScraperController extends AppController
       $http = new Client();
 
       $this->loadModel('TyreDetails');
-      $this->loadModel('WebsiteDetails');
-
-      $websiteDetail = $this->WebsiteDetails->find('all')->toArray();
       $tyreDetail = $this->TyreDetails->find('all')->toArray();
 
       foreach ($tyreDetail as $tyDetail) {
         usleep(1000000 + rand(0, 4000000));
-        $response = $http->get($webDetail->Url.'/tyres-search?Width='.$tyDetail->width.'&Profile='.$tyDetail->aspect_ratio.'&Diamteter='.$tyDetail->rim.'&Rating=&loadIndex=');
+        $response = $http->get('http://www.national.co.uk/tyres-search?Width='.$tyDetail->width.'&Profile='.$tyDetail->aspect_ratio.'&Diamteter='.$tyDetail->rim.'&Rating=&loadIndex=');
         $this->webScraping($response->body, $tyDetail);
+
       }
 
 
@@ -143,17 +141,20 @@ class NationalScraperController extends AppController
 
       $this->loadModel('WebsiteScraper');
 
-      if(!$response->isOk()){
-        dd($response->isOk());
-      }
+      $this->loadModel('WebsiteDetails');
+
+
 
       $dom = str_get_html($data);
 
-      $website_id = $this->WebsiteScraper->find('id', [
-        'contain' => [
+      $website_id = $this->WebsiteDetails->find('all', [
+        'conditions' => [
           'Url' => 'national'
         ]
-      ]);
+      ])
+      ->first();
+
+
 
        $web_data = [
 
@@ -202,7 +203,6 @@ class NationalScraperController extends AppController
       ]
     ];
 
-    dd($web_data);
 
       $this->WebsiteScraper->saveData($web_data);
 
