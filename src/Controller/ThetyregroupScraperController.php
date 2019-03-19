@@ -151,10 +151,10 @@ class ThetyregroupScraperController extends AppController
       //  usleep(1000000 + rand(0, 4000000));
 
 
-        $dom = str_get_html($response->body);
+      //  $dom = str_get_html($response->body);
 
         $element = $dom->find(".result");
-        $element1 = $dom->find(".price");
+        //$element1 = $dom->find(".price");
 
       //  $data = [];
 
@@ -191,7 +191,7 @@ class ThetyregroupScraperController extends AppController
 
             "Brand_name" => $brand,
             "Pattern_name" => $pattern,
-            "Price" => $this->preg_match_single('/([0-9]+\.[0-9]+)/', $element1[$n]->plaintext),
+            "Price" => $this->preg_match_single('/([0-9]+\.[0-9]+)/', $ele->find('.price',0)->plaintext),
             "Width" => $tyre_detail->width,
             "AspectRatio" => $tyre_detail->aspect_ratio,
             "Rim" => $tyre_detail->rim,
